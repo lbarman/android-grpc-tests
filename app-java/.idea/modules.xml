@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/1655440882/android-grpc-tests-app-java.iml" filepath="$PROJECT_DIR$/.idea/modules/1655440882/android-grpc-tests-app-java.iml" group="app-java" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-2138401660/app.iml" filepath="$PROJECT_DIR$/.idea/modules/-2138401660/app.iml" group="app-java/app" />
+    </modules>
+  </component>
+</project>

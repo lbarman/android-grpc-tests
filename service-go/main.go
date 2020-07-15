@@ -16,9 +16,10 @@ func StartService() {
 	for {
 		select {
 		case <-stopChan:
-			fmt.Println("Go Service Shutdown")
+			fmt.Println("go shutdown")
+			return
 		case t := <-ticker.C:
-			fmt.Println("Go Service: Tick at", t)
+			fmt.Println("go:", t)
 		}
 	}
 }

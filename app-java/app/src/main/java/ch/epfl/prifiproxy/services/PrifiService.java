@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import ch.epfl.prifiproxy.R;
 import ch.epfl.prifiproxy.activities.MainActivity;
-import prifiMobile.PrifiMobile;
+import servicego.Servicego;
 
 /**
  * This class controls the PriFi Core as Android Service (Foreground Service).
@@ -60,7 +60,7 @@ public class PrifiService extends Service {
         @Override
         public void handleMessage(Message msg) {
             try {
-                PrifiMobile.startClient(); // startClient is a blocking method.
+                Servicego.startService(); // blocking method.
             } finally {
                 stopForeground(true);
                 stopSelf(msg.arg1);

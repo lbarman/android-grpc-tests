@@ -28,21 +28,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ch.epfl.prifiproxy.R;
 import ch.epfl.prifiproxy.services.PrifiService;
-import ch.epfl.prifiproxy.utils.HttpThroughPrifiTask;
-import ch.epfl.prifiproxy.utils.NetworkHelper;
 import ch.epfl.prifiproxy.utils.SystemHelper;
-import prifiMobile.PrifiMobile;
+import servicego.Servicego;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String prifiRelayAddress;
-    private int prifiRelayPort;
-    private int prifiRelaySocksPort;
-
     private AtomicBoolean isPrifiServiceRunning;
 
-    private Button startButton, stopButton, resetButton, testPrifiButton, logButton;
-    private TextInputEditText relayAddressInput, relayPortInput, relaySocksPortInput;
+    private Button startButton, stopButton, resetButton, logButton;
     private ProgressDialog mProgessDialog;
 
     private BroadcastReceiver mBroadcastReceiver;
@@ -54,19 +47,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Load Variables from SharedPreferences
         SharedPreferences prifiPrefs = getSharedPreferences(getString(R.string.prifi_config_shared_preferences), MODE_PRIVATE);
-        prifiRelayAddress = prifiPrefs.getString(getString(R.string.prifi_config_relay_address),"");
-        prifiRelayPort = prifiPrefs.getInt(getString(R.string.prifi_config_relay_port), 0);
-        prifiRelaySocksPort = prifiPrefs.getInt(getString(R.string.prifi_config_relay_socks_port),0);
+        //prifiRelayAddress = prifiPrefs.getString(getString(R.string.prifi_config_relay_address),"");
 
         // Buttons
         startButton = findViewById(R.id.startButton);
         stopButton = findViewById(R.id.stopButton);
         resetButton = findViewById(R.id.resetButton);
-        testPrifiButton = findViewById(R.id.testPrifiButton);
         logButton = findViewById(R.id.logButton);
-        relayAddressInput = findViewById(R.id.relayAddressInput);
-        relayPortInput = findViewById(R.id.relayPortInput);
-        relaySocksPortInput = findViewById(R.id.relaySocksPortInput);
 
         // Actions
         mBroadcastReceiver = new BroadcastReceiver() {
@@ -96,17 +83,6 @@ public class MainActivity extends AppCompatActivity {
         stopButton.setOnClickListener(view -> stopPrifiService());
 
         resetButton.setOnClickListener(view -> resetPrifiConfig());
-
-        relayAddressInput.setText(prifiRelayAddress);
-        relayAddressInput.setOnEditorActionListener(new DoneEditorActionListener());
-
-        relayPortInput.setText(String.valueOf(prifiRelayPort));
-        relayPortInput.setOnEditorActionListener(new DoneEditorActionListener());
-
-        relaySocksPortInput.setText(String.valueOf(prifiRelaySocksPort));
-        relaySocksPortInput.setOnEditorActionListener(new DoneEditorActionListener());
-
-        testPrifiButton.setOnClickListener(view -> new HttpThroughPrifiTask().execute());
 
         logButton.setOnClickListener(view -> {
             Intent intent = new Intent(this, OnScreenLogActivity.class);
@@ -162,38 +138,8 @@ public class MainActivity extends AppCompatActivity {
                     getString(R.string.prifi_service_stopping_dialog_title),
                     getString(R.string.prifi_service_stopping_dialog_message)
             );
-            PrifiMobile.stopClient(); // StopClient will make the service to shutdown by itself
+            Servicego.stopService();
         }
-    }
-
-    /**
-     * A Dialog that guides users to launch or install Telegram after enabling PriFi Service
-     */
-    private void showRedirectDialog() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle(getString(R.string.redirect_dialog_title));
-        alertDialog.setMessage(getString(R.string.redirect_dialog_message));
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.redirect_dialog_cancel),
-                (dialog, which) -> dialog.dismiss());
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.redirect_dialog_confirm),
-                (dialog, which) -> redirectToTelegram());
-        alertDialog.show();
-    }
-
-    /**
-     * Open Telegram if the app is installed, otherwise open Google Play Download Page.
-     */
-    private void redirectToTelegram() {
-        final String appName = "org.telegram.messenger";
-        Intent intent;
-        final boolean isAppInstalled = SystemHelper.isAppAvailable(this, appName);
-        if (isAppInstalled) {
-            intent = getPackageManager().getLaunchIntentForPackage(appName);
-        } else {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("market://details?id=" + appName));
-        }
-        startActivity(intent);
     }
 
     /**
@@ -203,18 +149,11 @@ public class MainActivity extends AppCompatActivity {
     private void triggerDoneAction(TextView view) {
         String text = view.getText().toString();
         switch (view.getId()) {
+            /*
             case R.id.relayAddressInput:
                 updateInputFieldsAndPrefs(text, null, null);
                 break;
-
-            case R.id.relayPortInput:
-                updateInputFieldsAndPrefs(null, text, null);
-                break;
-
-            case R.id.relaySocksPortInput:
-                updateInputFieldsAndPrefs(null, null, text);
-                break;
-
+            */
             default:
                 break;
         }
@@ -230,41 +169,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.prifi_config_shared_preferences), MODE_PRIVATE).edit();
 
         try {
-
             if (relayAddressText != null) {
-                if (NetworkHelper.isValidIpv4Address(relayAddressText)) {
-                    prifiRelayAddress = relayAddressText;
-                    editor.putString(getString(R.string.prifi_config_relay_address), prifiRelayAddress);
-
-                    PrifiMobile.setRelayAddress(prifiRelayAddress);
-                } else {
-                    Toast.makeText(this, getString(R.string.prifi_invalid_address), Toast.LENGTH_SHORT).show();
-                }
-                relayAddressInput.setText(prifiRelayAddress);
-            }
-
-            if (relayPortText != null) {
-                if (NetworkHelper.isValidPort(relayPortText)) {
-                    prifiRelayPort = Integer.parseInt(relayPortText);
-                    editor.putInt(getString(R.string.prifi_config_relay_port), prifiRelayPort);
-
-                    PrifiMobile.setRelayPort((long) prifiRelayPort);
-                } else {
-                    Toast.makeText(this, getString(R.string.prifi_invalid_port), Toast.LENGTH_SHORT).show();
-                }
-                relayPortInput.setText(String.valueOf(prifiRelayPort));
-            }
-
-            if (relaySocksPortText != null) {
-                if (NetworkHelper.isValidPort(relaySocksPortText)) {
-                    prifiRelaySocksPort = Integer.parseInt(relaySocksPortText);
-                    editor.putInt(getString(R.string.prifi_config_relay_socks_port), prifiRelaySocksPort);
-
-                    PrifiMobile.setRelaySocksPort((long) prifiRelaySocksPort);
-                } else {
-                    Toast.makeText(this, getString(R.string.prifi_invalid_port), Toast.LENGTH_SHORT).show();
-                }
-                relaySocksPortInput.setText(String.valueOf(prifiRelaySocksPort));
+                Toast.makeText(this, getString(R.string.prifi_invalid_address), Toast.LENGTH_SHORT).show();
             }
 
         } catch (Exception e) {
@@ -300,16 +206,10 @@ public class MainActivity extends AppCompatActivity {
             startButton.setEnabled(false);
             stopButton.setEnabled(true);
             resetButton.setEnabled(false);
-            relayAddressInput.setEnabled(false);
-            relayPortInput.setEnabled(false);
-            relaySocksPortInput.setEnabled(false);
         } else {
             startButton.setEnabled(true);
             stopButton.setEnabled(false);
             resetButton.setEnabled(true);
-            relayAddressInput.setEnabled(true);
-            relayPortInput.setEnabled(true);
-            relaySocksPortInput.setEnabled(true);
         }
     }
 
@@ -323,9 +223,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private enum NetworkStatus {
         NONE,
-        RELAY_ONLY,
-        SOCKS_ONLY,
-        BOTH
+        NETWORK_OK
     }
 
     /**
@@ -375,25 +273,7 @@ public class MainActivity extends AppCompatActivity {
             MainActivity activity = activityReference.get();
 
             if (activity != null && !activity.isFinishing()) {
-                boolean isRelayAvailable = NetworkHelper.isHostReachable(
-                        activity.prifiRelayAddress,
-                        activity.prifiRelayPort,
-                        DEFAULT_PING_TIMEOUT);
-                boolean isSocksAvailable = NetworkHelper.isHostReachable(
-                        activity.prifiRelayAddress,
-                        activity.prifiRelaySocksPort,
-                        DEFAULT_PING_TIMEOUT);
-
-                if (isRelayAvailable && isSocksAvailable) {
-                    return NetworkStatus.BOTH;
-                } else if (isRelayAvailable) {
-                    return NetworkStatus.RELAY_ONLY;
-                } else if (isSocksAvailable) {
-                    return NetworkStatus.SOCKS_ONLY;
-                } else {
-                    return NetworkStatus.NONE;
-                }
-
+                return NetworkStatus.NETWORK_OK;
             } else {
                 return NetworkStatus.NONE;
             }
@@ -417,22 +297,13 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (networkStatus) {
                     case NONE:
-                        Toast.makeText(activity, activity.getString(R.string.relay_status_none), Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, activity.getString(R.string.no_network), Toast.LENGTH_LONG).show();
                         break;
 
-                    case RELAY_ONLY:
-                        Toast.makeText(activity, activity.getString(R.string.relay_status_relay_only), Toast.LENGTH_LONG).show();
-                        break;
-
-                    case SOCKS_ONLY:
-                        Toast.makeText(activity, activity.getString(R.string.relay_status_socks_only), Toast.LENGTH_LONG).show();
-                        break;
-
-                    case BOTH:
+                    case NETWORK_OK:
                         activity.isPrifiServiceRunning.set(true);
                         activity.startService(new Intent(activity, PrifiService.class));
                         activity.updateUIInputCapability(true);
-                        activity.showRedirectDialog();
                         break;
 
                     default:

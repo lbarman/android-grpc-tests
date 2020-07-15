@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: :servicego:@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/servicego.aar/7e59442257b02bcb8f1f99b1923c08e5/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/servicego.aar/7e59442257b02bcb8f1f99b1923c08e5/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

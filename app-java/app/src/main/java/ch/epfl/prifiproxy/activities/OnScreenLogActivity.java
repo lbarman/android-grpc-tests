@@ -57,7 +57,17 @@ public class OnScreenLogActivity extends AppCompatActivity {
                         case OnScreenLogHandler.UPDATE_LOG_BROADCAST_ACTION:
                             String log = intent.getExtras().getString(OnScreenLogHandler.UPDATE_LOG_INTENT_KEY);
                             if (log != null) {
-                                updateOnScreenLog(log);
+                                String[] loglines = log.split("GoLog   : ");
+                                String text = "";
+                                Boolean first = true;
+                                for(String line: loglines) {
+                                    if(first) {
+                                        first = false;
+                                        continue;
+                                    }
+                                    text += line.substring(0, 26) + "\n";
+                                }
+                                updateOnScreenLog(text);
                             }
                             break;
 
