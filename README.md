@@ -1,4 +1,6 @@
-# GoMobile
+# Android + Go Service
+
+This is a proof-of-concept to have a Go service running in background on Android.
 
 ## Prerequisites
 
@@ -46,3 +48,5 @@ dependencies{
   implementation(name: 'servicego', ext: 'aar')
 }
 ```
+
+Since this is already done, you can simply open `app-java/` with Android studio and run it.
